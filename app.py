@@ -1,0 +1,671 @@
+import streamlit as st
+import pandas as pd
+import numpy as np
+import os
+import json
+import plotly.graph_objects as go
+import plotly.express as px
+from src.pipeline.predict_pipeline import CustomData
+from src.utils import load_object
+
+# Page configuration
+st.set_page_config(
+    page_title="Student Performance Predictor",
+    page_icon=None,
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
+# Cache model and preprocessor loading for instant prediction response
+@st.cache_resource
+def load_ml_components():
+    model_path = os.path.join("models", "model.joblib")
+    preprocessor_path = os.path.join("models", "preprocessor.joblib")
+    if os.path.exists(model_path) and os.path.exists(preprocessor_path):
+        model = load_object(model_path)
+        preprocessor = load_object(preprocessor_path)
+        return model, preprocessor
+    return None, None
+
+model, preprocessor = load_ml_components()
+
+# Custom Palette Styling (Indigo & Cyan, Emoji-free, Gradient-free)
+st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@400;500;600&display=swap');
+    
+    /* Font family overrides */
+    html, body, [class*="css"] {
+        font-family: 'Inter', sans-serif;
+    }
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 600;
+        color: #F8FAFC !important;
+    }
+    
+    /* Custom Card Containers (Locked equal height, no glow) */
+    .adaptive-card {
+        background-color: #1E293B;
+        border: 1px solid rgba(148, 163, 184, 0.15);
+        padding: 24px;
+        border-radius: 14px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+        color: #F8FAFC;
+        height: auto;
+    }
+    @media (min-width: 768px) {
+        .adaptive-card {
+            height: 480px !important; /* Enforce equalized size on desktop */
+        }
+    }
+    .adaptive-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(148, 163, 184, 0.35); /* Muted slate border, no cyan glow */
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3); /* Dark shadow, no glow */
+    }
+    .adaptive-card h3, .adaptive-card h4 {
+        margin-top: 0;
+        color: #06B6D4 !important;
+    }
+    
+    /* KPI / Statistics Cards (No cyan border-left, no glow) */
+    .kpi-card {
+        background-color: #1E293B;
+        border: 1px solid rgba(148, 163, 184, 0.15);
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+    .kpi-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(148, 163, 184, 0.35); /* Muted slate border, no cyan glow */
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3); /* Dark shadow, no glow */
+    }
+    .kpi-val {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #06B6D4;
+        margin-top: 5px;
+    }
+    
+    /* Leaderboard cards (No glow) */
+    .leaderboard-item {
+        background-color: #1E293B;
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        padding: 12px 20px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+    .leaderboard-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    .rank-badge {
+        font-weight: bold;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+    }
+    .rank-1 { background-color: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .rank-2 { background-color: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); }
+    .rank-3 { background-color: rgba(180, 83, 9, 0.15); color: #d97706; border: 1px solid rgba(180, 83, 9, 0.3); }
+    .rank-normal { background-color: rgba(128, 128, 128, 0.1); color: #94a3b8; }
+    
+    /* Prediction Output Cards (Solid backgrounds, no gradients, no glow) */
+    .result-container {
+        padding: 24px;
+        border-radius: 14px;
+        color: #ffffff;
+        text-align: center;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        transition: all 0.3s ease;
+    }
+    .result-container:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+    }
+    .res-low {
+        background-color: #059669;
+    }
+    .res-medium {
+        background-color: #d97706;
+    }
+    .res-high {
+        background-color: #dc2626;
+    }
+    .result-val {
+        font-size: 3.5rem;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+        margin: 8px 0;
+    }
+    
+    /* Sticky/Fixed Custom Footer */
+    .custom-footer {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        background-color: var(--background-color, #0F172A);
+        border-top: 1px solid rgba(148, 163, 184, 0.12);
+        padding: 12px 0;
+        text-align: center;
+        z-index: 999;
+        font-size: 0.95rem;
+    }
+    /* Remove Streamlit default top and bottom padding gaps */
+    .block-container, div[data-testid="stMainBlockContainer"] {
+        padding-top: 3rem !important;
+        padding-bottom: 75px !important;
+    }
+    /* Hide Streamlit default footer */
+    footer {
+        visibility: hidden !important;
+        height: 0 !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# Heading Box (Above Navbar/Tabs - Solid background, no gradients, no glow)
+st.markdown("""
+    <div style="background-color: #1E293B; padding: 35px; border-radius: 16px; margin-bottom: 25px; border: 1px solid rgba(148, 163, 184, 0.2); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);">
+        <h1 style="margin-top: 0; color: #F8FAFC !important; font-size: 2.8rem; font-weight: 700; text-align: center; text-shadow: 0 2px 4px rgba(0,0,0,0.15);">Student Performance Predictor</h1>
+        <p style="font-size: 1.2rem; line-height: 1.6; color: #06B6D4; margin-bottom: 0; text-align: center; font-weight: 500;">
+            An Intelligent Machine Learning platform that analyzes student data to forecast academic outcomes and support early intervention strategies
+        </p>
+    </div>
+""", unsafe_allow_html=True)
+
+
+# Tabs configuration (Emoji-free)
+tab_home, tab_predict, tab_whatif, tab_compare, tab_analytics = st.tabs([
+    "Home", "Predict", "What-If Analysis", "Model Comparison", "Analytics"
+])
+
+# File paths
+data_path = os.path.join("data", "student_data.csv")
+model_report_path = os.path.join("models", "model_report.json")
+
+# TAB 1: HOME
+with tab_home:
+    # 2. KPI Cards
+    if os.path.exists(data_path):
+        df_kpi = pd.read_csv(data_path)
+        col_k1, col_k2, col_k3, col_k4 = st.columns(4)
+        with col_k1:
+            st.markdown(f"""
+                <div class="kpi-card">
+                    <div style="font-size: 0.9rem; color: white; font-weight: 500;">Total Students Evaluated</div>
+                    <div class="kpi-val">{df_kpi.shape[0]}</div>
+                </div>
+            """, unsafe_allow_html=True)
+        with col_k2:
+            st.markdown(f"""
+                <div class="kpi-card">
+                    <div style="font-size: 0.9rem; color: white; font-weight: 500;">Average Study Hours/Day</div>
+                    <div class="kpi-val">{df_kpi['study_hours'].mean():.1f} hrs</div>
+                </div>
+            """, unsafe_allow_html=True)
+        with col_k3:
+            st.markdown(f"""
+                <div class="kpi-card">
+                    <div style="font-size: 0.9rem; color: white; font-weight: 500;">Average Class Attendance</div>
+                    <div class="kpi-val">{df_kpi['attendance'].mean():.1f}%</div>
+                </div>
+            """, unsafe_allow_html=True)
+        with col_k4:
+            st.markdown(f"""
+                <div class="kpi-card">
+                    <div style="font-size: 0.9rem; color: white; font-weight: 500;">Average Target Final Score</div>
+                    <div class="kpi-val">{df_kpi['final_score'].mean():.1f}%</div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+    # 3. Project Summary
+    col_ps1, col_ps2 = st.columns(2)
+    with col_ps1:
+        st.markdown("""
+            <div class="adaptive-card">
+                <h3 style="margin-top: 0;">Project Objective & Problem Statement</h3>
+                <p>Predicting student academic failure or success early allows educators to deliver timely, personalized interventions. This system acts as a supportive advisory engine for students, teachers, and school administrations by providing:</p>
+                <ul style="padding-left: 20px;">
+                    <li style="margin-bottom: 8px;"><b>Early Risk Identification</b>: Classifying students into High, Medium, and Low risk thresholds.</li>
+                    <li style="margin-bottom: 8px;"><b>Behavioral Advisory</b>: Generating dynamically tailored recommendations based on lifestyle and academic features.</li>
+                    <li style="margin-bottom: 8px;"><b>Explainable AI (XAI)</b>: Informing users on exactly <i>why</i> a score was predicted.</li>
+                </ul>
+            </div>
+        """, unsafe_allow_html=True)
+    with col_ps2:
+        st.markdown("""
+            <div class="adaptive-card">
+                <h3 style="margin-top: 0;">Machine Learning Models</h3>
+                <p>Our pipeline compares 7 distinct regressor models using cross-validated Grid Search to output the most accurate predictions:</p>
+                <ol style="padding-left: 20px;">
+                    <li style="margin-bottom: 4px;"><b>Linear Regression</b></li>
+                    <li style="margin-bottom: 4px;"><b>Decision Tree Regressor</b></li>
+                    <li style="margin-bottom: 4px;"><b>Random Forest Regressor</b></li>
+                    <li style="margin-bottom: 4px;"><b>AdaBoost Regressor</b></li>
+                    <li style="margin-bottom: 4px;"><b>Gradient Boosting Regressor</b></li>
+                    <li style="margin-bottom: 4px;"><b>XGBoost Regressor</b></li>
+                    <li style="margin-bottom: 4px;"><b>CatBoost Regressor</b></li>
+                </ol>
+                <p style="margin-bottom: 0; margin-top: 12px;">The best model is automatically pickled and served for predictions.</p>
+            </div>
+        """, unsafe_allow_html=True)
+
+# TAB 2: PREDICT
+with tab_predict:
+    col_p_left, col_p_right = st.columns([3, 2])
+    
+    with col_p_left:
+        st.subheader("Student Details Form")
+        with st.form("predict_form"):
+            student_name = st.text_input("Student Name", "John Doe")
+            
+            p_col1, p_col2 = st.columns(2)
+            with p_col1:
+                previous_score = st.slider("Previous Score (%)", 40.0, 100.0, 75.0, 1.0)
+                attendance = st.slider("Attendance Rate (%)", 50.0, 100.0, 90.0, 1.0)
+                assignments_completed = st.slider("Assignments Completed (0-10)", 0, 10, 8, 1)
+                study_hours = st.slider("Study Hours/Day", 1.0, 10.0, 5.0, 0.5)
+                class_participation = st.selectbox("Class Participation (1-5)", [1, 2, 3, 4, 5], index=3)
+                internet_access = st.radio("Internet Access", ["Yes", "No"], horizontal=True)
+                
+            with p_col2:
+                failures = st.slider("Previous Failures (0-5)", 0, 5, 0, 1)
+                sleep_hours = st.slider("Sleep Hours/Day", 4.0, 10.0, 7.5, 0.5)
+                screen_time = st.slider("Screen Time/Day (hrs)", 1.0, 10.0, 3.0, 0.5)
+                physical_activity = st.slider("Physical Activity Rate (0-5)", 0, 5, 3, 1)
+                travel_time = st.selectbox("Travel Time to School", ["Under 15 min", "15-30 min", "30-60 min", "Over 60 min"], index=1)
+                school_type = st.radio("School Type", ["Public", "Private"], horizontal=True)
+            
+            
+            submit = st.form_submit_button("Generate Prediction")
+            
+    with col_p_right:
+        st.subheader("Prediction Analytics")
+        if submit:
+            if model is None or preprocessor is None:
+                st.error("Model files not found. Please train models first.")
+            else:
+                custom_data = CustomData(
+                    previous_score=previous_score,
+                    attendance=attendance,
+                    assignments_completed=assignments_completed,
+                    study_hours=study_hours,
+                    class_participation=class_participation,
+                    failures=failures,
+                    sleep_hours=sleep_hours,
+                    screen_time=screen_time,
+                    physical_activity=physical_activity,
+                    travel_time=travel_time,
+                    internet_access=internet_access,
+                    school_type=school_type
+                )
+                
+                input_df = custom_data.get_data_as_data_frame()
+                data_scaled = preprocessor.transform(input_df)
+                prediction = model.predict(data_scaled)
+                pred_score = float(np.round(prediction[0], 1))
+                
+                # Grade
+                if pred_score >= 85: grade = "A"
+                elif pred_score >= 75: grade = "B"
+                elif pred_score >= 60: grade = "C"
+                elif pred_score >= 50: grade = "D"
+                else: grade = "F"
+                
+                # Risk
+                if pred_score < 60:
+                    risk_lvl, risk_cls = "High Risk", "res-high"
+                elif pred_score <= 75:
+                    risk_lvl, risk_cls = "Medium Risk", "res-medium"
+                else:
+                    risk_lvl, risk_cls = "Low Risk", "res-low"
+                    
+                # 1. Prediction Card
+                st.markdown(f"""
+                    <div class="result-container {risk_cls}">
+                        <h4 style="color: #ffffff; margin: 0;">Predicted Outcome for {student_name}</h4>
+                        <div class="result-val">{pred_score}%</div>
+                        <p style="font-size: 1.2rem; margin: 0;">Expected Grade: <b>{grade}</b> | Risk Level: <b>{risk_lvl}</b></p>
+                    </div>
+                """, unsafe_allow_html=True)
+                
+                # 2. Gauge Chart
+                fig_pg = go.Figure(go.Indicator(
+                    mode="gauge+number",
+                    value=pred_score,
+                    domain={'x': [0, 1], 'y': [0, 1]},
+                    gauge={
+                        'axis': {'range': [0, 100], 'tickcolor': "gray"},
+                        'bar': {'color': "#2563eb"},
+                        'steps': [
+                            {'range': [0, 60], 'color': 'rgba(239, 68, 68, 0.15)'},
+                            {'range': [60, 75], 'color': 'rgba(245, 158, 11, 0.15)'},
+                            {'range': [75, 100], 'color': 'rgba(16, 185, 129, 0.15)'}
+                        ]
+                    }
+                ))
+                fig_pg.update_layout(height=200, margin=dict(l=20, r=20, t=10, b=10), paper_bgcolor="rgba(0,0,0,0)", font={'color': 'gray'})
+                st.plotly_chart(fig_pg, use_container_width=True)
+                
+                # 3. Recommendations
+                st.markdown("<h4>AI Recommendations</h4>", unsafe_allow_html=True)
+                recs = []
+                if attendance < 85:
+                    recs.append("Increase attendance above 85% to ensure comprehension of crucial subject topics.")
+                if study_hours < 4:
+                    recs.append("Dedicate an extra 1-2 hours daily to structured study sessions.")
+                if screen_time > 5:
+                    recs.append("Minimize non-essential screen time to boost study focus and sleep cycles.")
+                if sleep_hours < 7:
+                    recs.append("Maintain 7-8 hours of sleep for improved memory consolidation.")
+                if assignments_completed < 8:
+                    recs.append("Complete pending assignments to strengthen practical knowledge.")
+                if failures > 0:
+                    recs.append("Prioritize recovering past failed subjects and attend extra remedial classes.")
+                
+                # Compound / Joint AI Recommendations based on parameter values
+                if attendance < 80 and assignments_completed < 6:
+                    recs.append("Critical Warning: Both class attendance and assignment completion rates are dangerously low. Regular attendance is key to understanding, and completing assignments is essential for practice. Prioritize catching up immediately.")
+                if previous_score < 60 and study_hours < 3:
+                    recs.append("Action Needed: A lower previous score combined with low study hours creates a high-risk scenario. Dedicate at least 2 more hours per day to review key concepts.")
+                if screen_time > 6 and sleep_hours < 6:
+                    recs.append("Lifestyle Advice: Excessive screen time combined with insufficient sleep is likely affecting your cognitive stamina. Set a digital boundary and aim for at least 7 hours of sleep.")
+                if failures > 1 and previous_score < 65:
+                    recs.append("Urgent Support: Having multiple previous failures and low academic scores suggests foundational learning gaps. Reach out to advisors or instructors for structured support plans.")
+
+                if not recs:
+                    recs.append("Keep maintaining your current positive profile habits.")
+                    
+                for r in recs:
+                    st.write(f"- {r}")
+        else:
+            st.info("Input student parameters in the form and click Generate Prediction.")
+
+# TAB 3: WHAT-IF ANALYSIS
+with tab_whatif:
+    col_wi_l, col_wi_r = st.columns([3, 2])
+    
+    with col_wi_l:
+        st.subheader("Adjust Parameters")
+        wi_prev = st.slider("Previous Score (%)", 40.0, 100.0, 70.0, 1.0, key="wi_prev_slider")
+        wi_att = st.slider("Attendance Rate (%)", 50.0, 100.0, 85.0, 1.0, key="wi_att_slider")
+        wi_study = st.slider("Study Hours/Day", 1.0, 10.0, 4.0, 0.5, key="wi_study_slider")
+        wi_assign = st.slider("Assignments Completed (0-10)", 0, 10, 6, 1, key="wi_assign_slider")
+        wi_failures = st.slider("Previous Failures (0-5)", 0, 5, 0, 1, key="wi_failures_slider")
+        wi_sleep = st.slider("Sleep Hours/Day", 4.0, 10.0, 7.0, 0.5, key="wi_sleep_slider")
+        wi_screen = st.slider("Screen Time/Day (hrs)", 1.0, 10.0, 5.0, 0.5, key="wi_screen_slider")
+        
+    with col_wi_r:
+        st.subheader("Prediction Change Outcome")
+        if model is not None and preprocessor is not None:
+            wi_custom = CustomData(
+                previous_score=wi_prev,
+                attendance=wi_att,
+                assignments_completed=wi_assign,
+                study_hours=wi_study,
+                class_participation=3,
+                failures=wi_failures,
+                sleep_hours=wi_sleep,
+                screen_time=wi_screen,
+                physical_activity=3,
+                travel_time="15-30 min",
+                internet_access="Yes",
+                school_type="Public"
+            )
+            wi_df = wi_custom.get_data_as_data_frame()
+            wi_scaled = preprocessor.transform(wi_df)
+            wi_pred = model.predict(wi_scaled)
+            wi_score = float(np.round(wi_pred[0], 1))
+            
+            # Baseline Comparison
+            baseline_score = 65.0
+            delta = wi_score - baseline_score
+            delta_txt = f"+{delta:.1f}%" if delta >= 0 else f"{delta:.1f}%"
+            
+            # Metrics comparison
+            col_m1, col_m2 = st.columns(2)
+            with col_m1:
+                st.metric("Expected Final Score", f"{wi_score}%", delta=delta_txt)
+            with col_m2:
+                grade_wi = "F"
+                if wi_score >= 85: grade_wi = "A"
+                elif wi_score >= 75: grade_wi = "B"
+                elif wi_score >= 60: grade_wi = "C"
+                elif wi_score >= 50: grade_wi = "D"
+                st.metric("Expected Grade", grade_wi)
+                
+            fig_g_wi = go.Figure(go.Indicator(
+                mode="gauge+number",
+                value=wi_score,
+                domain={'x': [0, 1], 'y': [0, 1]},
+                gauge={
+                    'axis': {'range': [0, 100], 'tickcolor': "gray"},
+                    'bar': {'color': "#2563eb"},
+                    'steps': [
+                        {'range': [0, 60], 'color': 'rgba(239, 68, 68, 0.15)'},
+                        {'range': [60, 75], 'color': 'rgba(245, 158, 11, 0.15)'},
+                        {'range': [75, 100], 'color': 'rgba(16, 185, 129, 0.15)'}
+                    ]
+                }
+            ))
+            fig_g_wi.update_layout(height=220, margin=dict(l=20, r=20, t=10, b=10), paper_bgcolor="rgba(0,0,0,0)", font={'color': 'gray'})
+            st.plotly_chart(fig_g_wi, use_container_width=True)
+            
+            # Dynamic optimization recommendations
+            st.markdown("<h4>Optimization Strategies</h4>", unsafe_allow_html=True)
+            wi_recs = []
+            if wi_att < 92:
+                wi_recs.append(f"Raise attendance: Increasing rate by {95 - wi_att:.0f}% (aiming for 95%+) improves learning consistency.")
+            if wi_study < 5.0:
+                wi_recs.append(f"Boost study time: Adding {5.5 - wi_study:.1f} hrs/day of study (aiming for 5.5+ hrs) will directly elevate the final grade.")
+            if wi_assign < 8:
+                wi_recs.append(f"Complete assignments: Finishing {9 - wi_assign} more assignments (aiming for 9+) ensures practical mastery.")
+            if wi_failures > 0:
+                wi_recs.append("Remedial Support: Actively review concepts related to previous failed attempts to build foundational confidence.")
+            if wi_sleep < 7.0:
+                wi_recs.append(f"Rest optimization: Increasing sleep by {7.5 - wi_sleep:.1f} hrs (aiming for 7.5+ hrs) enhances memory consolidation.")
+            if wi_screen > 5.0:
+                wi_recs.append(f"Digital balance: Cutting screen time by {wi_screen - 3.0:.1f} hrs/day (aiming for <3 hrs) helps reclaim study focus.")
+            if not wi_recs:
+                wi_recs.append("Your parameter configuration is highly optimized! Maintain these habits for peak academic results.")
+            for r in wi_recs:
+                st.write(f"- {r}")
+            
+        else:
+            st.warning("Model files not found. Please train models first.")
+
+# TAB 4: MODEL COMPARISON
+with tab_compare:
+    if os.path.exists(model_report_path):
+        with open(model_report_path, "r") as f:
+            report = json.load(f)
+            
+        records = []
+        best_model = ""
+        best_r2 = -1.0
+        for name, metrics in report.items():
+            records.append({
+                "Model": name,
+                "R2 Score": round(metrics["r2_score"], 4),
+                "MAE": round(metrics["mae"], 4),
+                "MSE": round(metrics["mse"], 4),
+                "RMSE": round(metrics["rmse"], 4)
+            })
+            if metrics["r2_score"] > best_r2:
+                best_r2 = metrics["r2_score"]
+                best_model = name
+                
+        df_metrics = pd.DataFrame(records)
+        df_sorted = df_metrics.sort_values(by="R2 Score", ascending=False)
+        
+        # 1. Model Leaderboard
+        st.subheader("Model Leaderboard")
+        st.write("Top models ranked by R2 Score:")
+        
+        ranks = ["rank-1", "rank-2", "rank-3"]
+        badges = ["1st Place", "2nd Place", "3rd Place"]
+        
+        for idx, row in df_sorted.head(3).iterrows():
+            st.markdown(f"""
+                <div class="leaderboard-item">
+                    <div>
+                        <span class="rank-badge {ranks[df_sorted.index.get_loc(idx)]}">{badges[df_sorted.index.get_loc(idx)]}</span>
+                        <span style="font-weight: bold; margin-left: 15px;">{row['Model']}</span>
+                    </div>
+                    <div style="font-weight: bold; color: #06B6D4;">R2: {row['R2 Score']:.4f}</div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+        st.markdown("---")
+        
+        # 2. Metrics Table
+        st.subheader("Evaluation Metrics Table")
+        st.dataframe(df_metrics, use_container_width=True)
+    else:
+        st.warning("Model training report not found. Please run the model trainer pipeline.")
+
+# TAB 5: ANALYTICS
+with tab_analytics:
+    col_a_l, col_a_r = st.columns([1, 1])
+    
+    with col_a_l:
+        # 1. Feature Importance
+        st.subheader("Feature Importance")
+        if model is not None and preprocessor is not None:
+            # Extract importances/coefficients
+            if hasattr(model, "feature_importances_"):
+                importances = model.feature_importances_
+            elif hasattr(model, "coef_"):
+                importances = np.abs(model.coef_)
+            else:
+                importances = np.ones(len(preprocessor.get_feature_names_out()))
+                
+            # Map back to parent variables
+            feature_names = preprocessor.get_feature_names_out()
+            original_features = [
+                "previous_score", "attendance", "assignments_completed", "study_hours",
+                "class_participation", "failures", "sleep_hours", "screen_time", "physical_activity",
+                "travel_time", "internet_access", "school_type"
+            ]
+            readable_names = {
+                "previous_score": "Previous Score",
+                "attendance": "Attendance Rate",
+                "assignments_completed": "Assignments Completed",
+                "study_hours": "Study Hours",
+                "class_participation": "Class Participation",
+                "failures": "Previous Failures",
+                "sleep_hours": "Sleep Duration",
+                "screen_time": "Screen Time",
+                "physical_activity": "Physical Activity",
+                "travel_time": "Travel Time",
+                "internet_access": "Internet Access",
+                "school_type": "School Type"
+            }
+            
+            grouped_importances = {}
+            for name, val in zip(feature_names, importances):
+                parent = None
+                for orig in original_features:
+                    if orig in name:
+                        parent = orig
+                        break
+                if parent:
+                    readable = readable_names[parent]
+                    grouped_importances[readable] = grouped_importances.get(readable, 0.0) + val
+            
+            total_imp = sum(grouped_importances.values())
+            if total_imp > 0:
+                for k in grouped_importances:
+                    grouped_importances[k] = (grouped_importances[k] / total_imp) * 100
+                    
+            df_imp = pd.DataFrame({
+                "Feature": list(grouped_importances.keys()),
+                "Relative Importance (%)": list(grouped_importances.values())
+            }).sort_values(by="Relative Importance (%)", ascending=True)
+            
+            fig_imp = px.bar(
+                df_imp,
+                x="Relative Importance (%)",
+                y="Feature",
+                orientation="h",
+                color_discrete_sequence=["#6366F1"]
+            )
+            fig_imp.update_layout(
+                height=350,
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font={'color': 'gray'}
+            )
+            st.plotly_chart(fig_imp, use_container_width=True)
+        else:
+            st.warning("Model files not found. Feature Importance cannot be loaded.")
+            
+        # 3. Correlation Heatmap
+        st.subheader("Correlation Heatmap")
+        if os.path.exists(data_path):
+            df_heat = pd.read_csv(data_path)
+            numeric_cols = df_heat.select_dtypes(include=[np.number])
+            corr = numeric_cols.corr()
+            
+            fig_heat = px.imshow(
+                corr,
+                text_auto=".2f",
+                color_continuous_scale="RdBu_r",
+                labels=dict(color="Correlation")
+            )
+            fig_heat.update_layout(
+                height=350,
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font={'color': 'gray'}
+            )
+            st.plotly_chart(fig_heat, use_container_width=True)
+        else:
+            st.warning("Dataset not found.")
+            
+    with col_a_r:
+        # 2. Scatter Plot
+        st.subheader("Scatter Plot Explorations")
+        if os.path.exists(data_path):
+            df_scat = pd.read_csv(data_path)
+            
+            x_option = st.selectbox("Select X-Axis Feature", ["study_hours", "attendance", "previous_score", "sleep_hours", "screen_time", "failures"])
+            y_option = st.selectbox("Select Y-Axis Feature", ["final_score", "previous_score", "attendance"])
+            color_option = st.selectbox("Select Color Legend Feature", ["travel_time", "internet_access", "school_type"])
+            
+            fig_sc = px.scatter(
+                df_scat,
+                x=x_option,
+                y=y_option,
+                color=color_option,
+                color_discrete_sequence=px.colors.qualitative.Safe
+            )
+            fig_sc.update_layout(
+                height=450,
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font={'color': 'gray'}
+            )
+            st.plotly_chart(fig_sc, use_container_width=True)
+        else:
+            st.warning("Dataset not found.")
+
+# Centered Footer at the bottom (Sticky to viewport bottom)
+st.markdown("""
+    <div class="custom-footer">
+        <p style="margin: 0; font-weight: 500; color: var(--text-color, #F8FAFC) !important;">Made with ❤️ by Sara Sinha | © 2026 Student Performance Predictor</p>
+    </div>
+""", unsafe_allow_html=True)

@@ -1,0 +1,72 @@
+{
+    "Linear Regression": {
+        "r2_score": 0.9180796548079918,
+        "mae": 2.075973691846396,
+        "mse": 6.771894135081616,
+        "rmse": 2.6022863284199946,
+        "best_params": {}
+    },
+    "Decision Tree": {
+        "r2_score": 0.6448225380571388,
+        "mae": 4.206542604182309,
+        "mse": 29.360522905592898,
+        "rmse": 5.418535125436846,
+        "best_params": {
+            "criterion": "poisson",
+            "max_depth": 8
+        }
+    },
+    "Random Forest": {
+        "r2_score": 0.8220803365316136,
+        "mae": 3.102922122270791,
+        "mse": 14.707617780824494,
+        "rmse": 3.8350512096743237,
+        "best_params": {
+            "max_depth": 10,
+            "n_estimators": 256
+        }
+    },
+    "AdaBoost Regressor": {
+        "r2_score": 0.7661334319490047,
+        "mae": 3.515537900849543,
+        "mse": 19.332433681330496,
+        "rmse": 4.396866347903981,
+        "best_params": {
+            "learning_rate": 0.5,
+            "n_estimators": 256
+        }
+    },
+    "Gradient Boosting": {
+        "r2_score": 0.8746674532906592,
+        "mae": 2.502155147950853,
+        "mse": 10.360536640885966,
+        "rmse": 3.218778749912141,
+        "best_params": {
+            "learning_rate": 0.1,
+            "n_estimators": 128,
+            "subsample": 0.8
+        }
+    },
+    "XGBRegressor": {
+        "r2_score": 0.8646521088663799,
+        "mae": 2.6107623291015627,
+        "mse": 11.188448828128749,
+        "rmse": 3.344913874545763,
+        "best_params": {
+            "learning_rate": 0.1,
+            "max_depth": 3,
+            "n_estimators": 128
+        }
+    },
+    "CatBoosting Regressor": {
+        "r2_score": 0.8830882536016149,
+        "mae": 2.4480354534480244,
+        "mse": 9.664436446181004,
+        "rmse": 3.1087676732398326,
+        "best_params": {
+            "depth": 6,
+            "iterations": 100,
+            "learning_rate": 0.1
+        }
+    }
+}
