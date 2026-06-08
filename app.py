@@ -163,8 +163,9 @@ st.markdown("""
         z-index: 999;
         font-size: 0.95rem;
     }
-    /* Remove Streamlit default bottom padding gap */
+    /* Remove Streamlit default top and bottom padding gaps */
     .block-container, div[data-testid="stMainBlockContainer"] {
+        padding-top: 3rem !important;
         padding-bottom: 75px !important;
     }
     /* Hide Streamlit default footer */
