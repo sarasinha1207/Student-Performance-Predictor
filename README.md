@@ -1,59 +1,60 @@
 # Student Performance Predictor
 
-This project is a Flask-based web application that predicts student performance based on various input parameters. It utilizes machine learning models to provide insights into potential student outcomes.
+This project is a production-ready Streamlit web application that predicts a student's final academic performance based on demographic, lifestyle, and academic features. It compares 7 regression models using cross-validated Grid Search to select the best predictor.
 
 ## Features
 
-- Predict student performance based on:
-    - Gender
-    - Ethnicity
-    - Parental Education
-    - Lunch Type
-    - Test Preparation
-    - Reading Score
-    - Writing Score
-- User-friendly web interface for inputting parameters and viewing predictions.
-- Machine learning model for accurate predictions.
+- Predict student final exam scores based on:
+    - Academic Factors: Previous Score, Attendance Rate, Assignments Completed, Study Hours, Class Participation.
+    - Lifestyle Factors: Sleep Hours, Screen Time, Physical Activity.
+    - Demographic Factors: Parent Education Level, Family Income Status, Internet Access, School Type.
+- What-If Analysis Module: Slide parameters in real-time and view score outcomes on an interactive gauge chart.
+- Performance Comparison: View metrics (R2 Score, MAE, MSE, RMSE) of all 7 machine learning models.
+- Analytics Dashboard: Scatter plots showing attendance and study patterns relative to final scores.
+- Memory Caching: Model and preprocessor components are cached for instant predictions.
 
 ## Setup and Installation
 
-1.  **Clone the repository:**
+1. **Clone the repository:**
 
     ```bash
-    git clone https://github.com/yashg8180/mlproject.git
-    cd mlproject
+    git clone https://github.com/sarasinha1207/Student-Performance-Predictor.git
+    cd Student-Performance-Predictor
     ```
 
-2.  **Create a virtual environment (recommended):**
+2. **Create a virtual environment:**
 
     ```bash
     python -m venv venv
-    source venv/bin/activate  # On Windows: venv\Scripts\activate
+    venv\Scripts\activate  # On macOS/Linux: source venv/bin/activate
     ```
 
-3.  **Install dependencies:**
+3. **Install dependencies:**
 
     ```bash
     pip install -r requirements.txt
     ```
 
-4.  **Run the Flask application:**
+4. **Train the ML models:**
 
     ```bash
-    python app.py
+    python -m src.components.data_ingestion
     ```
 
-    The application will typically run on `http://127.0.0.1:5000/`.
+5. **Run the Streamlit application:**
+
+    ```bash
+    streamlit run app.py
+    ```
+
+    The application will run on `http://localhost:8501`.
 
 ## Project Structure
 
--   `app.py`: Main Flask application file.
--   `templates/`: Contains HTML templates (`index.html`, `home.html`).
--   `artifacts/`: Stores trained machine learning models and preprocessors.
--   `src/`: Contains source code for data ingestion, transformation, model training, and prediction pipelines.
--   `notebook/`: Jupyter notebooks for EDA and model training.
--   `requirements.txt`: Lists project dependencies.
-
-## Usage
-
-Navigate to the application in your web browser, input the required student parameters, and get a prediction of their performance.
+- `app.py`: Main Streamlit web application.
+- `data/`: Stores raw, training, and testing datasets.
+- `models/`: Stores serialized joblib models and model transformation preprocessors.
+- `notebooks/`: Contains the Jupyter notebook for exploratory data analysis (EDA).
+- `src/`: Contains pipeline source code (data ingestion, data transformation, model training, and prediction pipeline).
+- `requirements.txt`: Lists project dependencies.
+- `setup.py`: Project setup and package installation script.
