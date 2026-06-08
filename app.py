@@ -30,6 +30,7 @@ def load_ml_components():
 model, preprocessor = load_ml_components()
 
 # Custom Adaptive Styling (Light/Dark Mode friendly, emoji-free)
+# Custom Palette Styling (Emoji-free)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@400;500;600&display=swap');
@@ -41,77 +42,69 @@ st.markdown("""
     h1, h2, h3, h4, h5, h6 {
         font-family: 'Outfit', sans-serif;
         font-weight: 600;
+        color: #F8FAFC !important;
     }
     
-    /* Header Banner - Solid Dark Slate Gradient (Contrast safe for both modes) */
-    .title-banner {
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-        padding: 35px;
-        border-radius: 16px;
-        color: #ffffff;
-        text-align: center;
-        margin-bottom: 30px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        border: 1px solid rgba(255,255,255,0.05);
-    }
-    .title-banner h1 {
-        color: #ffffff !important;
-        margin: 0;
-        font-size: 2.8rem;
-        font-weight: 700;
-    }
-    .title-banner p {
-        color: #94a3b8;
-        font-size: 1.15rem;
-        margin-top: 8px;
-        margin-bottom: 0;
-    }
-    
-    /* Adaptive Glassmorphic Card Container (Works in Light & Dark Mode) */
+    /* Custom Card Containers */
     .adaptive-card {
-        background-color: rgba(128, 128, 128, 0.08);
-        border: 1px solid rgba(128, 128, 128, 0.16);
+        background-color: #1E293B;
+        border: 1px solid rgba(148, 163, 184, 0.15);
         padding: 24px;
         border-radius: 14px;
         margin-bottom: 20px;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+        color: #F8FAFC;
     }
     .adaptive-card:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
-        border-color: rgba(128, 128, 128, 0.25);
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(99, 102, 241, 0.25);
+        border-color: rgba(6, 182, 212, 0.3);
     }
     .adaptive-card h3, .adaptive-card h4 {
         margin-top: 0;
+        color: #06B6D4 !important;
     }
     
-    /* KPI Metric styling */
+    /* KPI / Statistics Cards */
     .kpi-card {
-        background-color: rgba(128, 128, 128, 0.06);
-        border: 1px solid rgba(128, 128, 128, 0.14);
+        background-color: #1E293B;
+        border-left: 4px solid #06B6D4;
+        border-top: 1px solid rgba(148, 163, 184, 0.1);
+        border-right: 1px solid rgba(148, 163, 184, 0.1);
+        border-bottom: 1px solid rgba(148, 163, 184, 0.1);
         padding: 20px;
         border-radius: 12px;
         text-align: center;
         margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+    .kpi-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(99, 102, 241, 0.25);
     }
     .kpi-val {
         font-size: 2rem;
         font-weight: 700;
-        color: #3b82f6;
+        color: #06B6D4;
         margin-top: 5px;
     }
     
     /* Leaderboard cards */
     .leaderboard-item {
-        background-color: rgba(128, 128, 128, 0.06);
-        border: 1px solid rgba(128, 128, 128, 0.12);
+        background-color: #1E293B;
+        border: 1px solid rgba(148, 163, 184, 0.12);
         padding: 12px 20px;
         border-radius: 10px;
         margin-bottom: 10px;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        transition: all 0.3s ease;
+    }
+    .leaderboard-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
     }
     .rank-badge {
         font-weight: bold;
@@ -119,19 +112,24 @@ st.markdown("""
         border-radius: 6px;
         font-size: 0.85rem;
     }
-    .rank-1 { background-color: rgba(245, 158, 11, 0.15); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); }
-    .rank-2 { background-color: rgba(148, 163, 184, 0.15); color: #64748b; border: 1px solid rgba(148, 163, 184, 0.3); }
-    .rank-3 { background-color: rgba(180, 83, 9, 0.15); color: #b45309; border: 1px solid rgba(180, 83, 9, 0.3); }
-    .rank-normal { background-color: rgba(128, 128, 128, 0.1); color: gray; }
+    .rank-1 { background-color: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .rank-2 { background-color: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); }
+    .rank-3 { background-color: rgba(180, 83, 9, 0.15); color: #d97706; border: 1px solid rgba(180, 83, 9, 0.3); }
+    .rank-normal { background-color: rgba(128, 128, 128, 0.1); color: #94a3b8; }
     
-    /* Prediction Output Cards with vibrant status-color gradients */
+    /* Prediction Output Cards */
     .result-container {
         padding: 24px;
         border-radius: 14px;
         color: #ffffff;
         text-align: center;
         margin-bottom: 20px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        transition: all 0.3s ease;
+    }
+    .result-container:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(99, 102, 241, 0.25);
     }
     .res-low {
         background: linear-gradient(135deg, #059669 0%, #10b981 100%);
@@ -151,6 +149,17 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# Heading Box (Above Navbar/Tabs)
+st.markdown("""
+    <div style="background: linear-gradient(135deg, #6366F1 0%, #06B6D4 100%); padding: 35px; border-radius: 16px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);">
+        <h1 style="margin-top: 0; color: #F8FAFC !important; font-size: 2.8rem; font-weight: 700; text-align: center; text-shadow: 0 2px 4px rgba(0,0,0,0.15);">Student Performance Predictor</h1>
+        <p style="font-size: 1.2rem; line-height: 1.6; color: #F8FAFC; opacity: 0.9; margin-bottom: 0; text-align: center;">
+            An intelligent Machine Learning platform that analyzes student data to forecast academic outcomes and support early intervention strategies
+        </p>
+    </div>
+""", unsafe_allow_html=True)
+
+
 # Tabs configuration (Emoji-free)
 tab_home, tab_predict, tab_whatif, tab_compare, tab_analytics = st.tabs([
     "Home", "Predict", "What-If Analysis", "Model Comparison", "Analytics"
@@ -162,16 +171,6 @@ model_report_path = os.path.join("models", "model_report.json")
 
 # TAB 1: HOME
 with tab_home:
-    # 1. Hero Section
-    st.markdown("""
-        <div style="background-color: rgba(128, 128, 128, 0.05); padding: 30px; border-radius: 14px; border: 1px solid rgba(128, 128, 128, 0.12); margin-bottom: 25px;">
-            <h2 style="margin-top: 0; color: #3b82f6;">Proactive Academic Outcomes Advising</h2>
-            <p style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 0;">
-                Early prediction of student outcomes enables educational institutions to implement timely support mechanisms. This system evaluates critical academic, lifestyle, and demographic attributes to identify student risk levels and provide tailored strategies for academic growth.
-            </p>
-        </div>
-    """, unsafe_allow_html=True)
-    
     # 2. KPI Cards
     if os.path.exists(data_path):
         df_kpi = pd.read_csv(data_path)
@@ -210,15 +209,30 @@ with tab_home:
     with col_ps1:
         st.markdown("""
             <div class="adaptive-card">
-                <h4>Core Objective</h4>
-                <p>The core objective is to build a robust regressor pipeline trained on academic and lifestyle vectors to predict the final exam score of students. This allows teachers to identify students in need of academic support prior to final examinations.</p>
+                <h3 style="color: #3b82f6; margin-top: 0;">Project Objective & Problem Statement</h3>
+                <p>Predicting student academic failure or success early allows educators to deliver timely, personalized interventions. This system acts as a supportive advisory engine for students, teachers, and school administrations by providing:</p>
+                <ul style="padding-left: 20px;">
+                    <li style="margin-bottom: 8px;"><b>Early Risk Identification</b>: Classifying students into High, Medium, and Low risk thresholds.</li>
+                    <li style="margin-bottom: 8px;"><b>Behavioral Advisory</b>: Generating dynamically tailored recommendations based on lifestyle and academic features.</li>
+                    <li style="margin-bottom: 8px;"><b>Explainable AI (XAI)</b>: Informing users on exactly <i>why</i> a score was predicted.</li>
+                </ul>
             </div>
         """, unsafe_allow_html=True)
     with col_ps2:
         st.markdown("""
             <div class="adaptive-card">
-                <h4>Pipeline Architecture</h4>
-                <p>Features are split into numerical columns (scaled using StandardScaler) and categorical columns (encoded using OneHotEncoder) inside a ColumnTransformer. All ML models are evaluated against test partitions using R2, MAE, MSE, and RMSE scores.</p>
+                <h3 style="color: #3b82f6; margin-top: 0;">Machine Learning Models</h3>
+                <p>Our pipeline compares 7 distinct regressor models using cross-validated Grid Search to output the most accurate predictions:</p>
+                <ol style="padding-left: 20px;">
+                    <li style="margin-bottom: 4px;"><b>Linear Regression</b></li>
+                    <li style="margin-bottom: 4px;"><b>Decision Tree Regressor</b></li>
+                    <li style="margin-bottom: 4px;"><b>Random Forest Regressor</b></li>
+                    <li style="margin-bottom: 4px;"><b>AdaBoost Regressor</b></li>
+                    <li style="margin-bottom: 4px;"><b>Gradient Boosting Regressor</b></li>
+                    <li style="margin-bottom: 4px;"><b>XGBoost Regressor</b></li>
+                    <li style="margin-bottom: 4px;"><b>CatBoost Regressor</b></li>
+                </ol>
+                <p style="margin-bottom: 0; margin-top: 12px;">The best model is automatically pickled and served for predictions.</p>
             </div>
         """, unsafe_allow_html=True)
 
@@ -334,6 +348,17 @@ with tab_predict:
                     recs.append("Complete pending assignments to strengthen practical knowledge.")
                 if failures > 0:
                     recs.append("Prioritize recovering past failed subjects and attend extra remedial classes.")
+                
+                # Compound / Joint AI Recommendations based on parameter values
+                if attendance < 80 and assignments_completed < 6:
+                    recs.append("Critical Warning: Both class attendance and assignment completion rates are dangerously low. Regular attendance is key to understanding, and completing assignments is essential for practice. Prioritize catching up immediately.")
+                if previous_score < 60 and study_hours < 3:
+                    recs.append("Action Needed: A lower previous score combined with low study hours creates a high-risk scenario. Dedicate at least 2 more hours per day to review key concepts.")
+                if screen_time > 6 and sleep_hours < 6:
+                    recs.append("Lifestyle Advice: Excessive screen time combined with insufficient sleep is likely affecting your cognitive stamina. Set a digital boundary and aim for at least 7 hours of sleep.")
+                if failures > 1 and previous_score < 65:
+                    recs.append("Urgent Support: Having multiple previous failures and low academic scores suggests foundational learning gaps. Reach out to advisors or instructors for structured support plans.")
+
                 if not recs:
                     recs.append("Keep maintaining your current positive profile habits.")
                     
@@ -411,6 +436,26 @@ with tab_whatif:
             ))
             fig_g_wi.update_layout(height=220, margin=dict(l=20, r=20, t=10, b=10), paper_bgcolor="rgba(0,0,0,0)", font={'color': 'gray'})
             st.plotly_chart(fig_g_wi, use_container_width=True)
+            
+            # Dynamic optimization recommendations
+            st.markdown("<h4>Optimization Strategies</h4>", unsafe_allow_html=True)
+            wi_recs = []
+            if wi_att < 92:
+                wi_recs.append(f"Raise attendance: Increasing rate by {95 - wi_att:.0f}% (aiming for 95%+) improves learning consistency.")
+            if wi_study < 5.0:
+                wi_recs.append(f"Boost study time: Adding {5.5 - wi_study:.1f} hrs/day of study (aiming for 5.5+ hrs) will directly elevate the final grade.")
+            if wi_assign < 8:
+                wi_recs.append(f"Complete assignments: Finishing {9 - wi_assign} more assignments (aiming for 9+) ensures practical mastery.")
+            if wi_failures > 0:
+                wi_recs.append("Remedial Support: Actively review concepts related to previous failed attempts to build foundational confidence.")
+            if wi_sleep < 7.0:
+                wi_recs.append(f"Rest optimization: Increasing sleep by {7.5 - wi_sleep:.1f} hrs (aiming for 7.5+ hrs) enhances memory consolidation.")
+            if wi_screen > 5.0:
+                wi_recs.append(f"Digital balance: Cutting screen time by {wi_screen - 3.0:.1f} hrs/day (aiming for <3 hrs) helps reclaim study focus.")
+            if not wi_recs:
+                wi_recs.append("Your parameter configuration is highly optimized! Maintain these habits for peak academic results.")
+            for r in wi_recs:
+                st.write(f"- {r}")
             
         else:
             st.warning("Model files not found. Please train models first.")
@@ -590,3 +635,10 @@ with tab_analytics:
             st.plotly_chart(fig_sc, use_container_width=True)
         else:
             st.warning("Dataset not found.")
+
+# Centered Footer at the bottom
+st.markdown("""
+    <div style="margin-top: 50px; padding: 20px; text-align: center; border-top: 1px solid rgba(128, 128, 128, 0.15);">
+        <p style="color: gray; font-size: 1rem; margin: 0;">Made by Sara Sinha</p>
+    </div>
+""", unsafe_allow_html=True)
