@@ -1,10 +1,10 @@
 # Student Performance Predictor
 
-An end-to-end, production-ready Machine Learning web application designed to predict student academic outcomes and detect risk levels early using advanced predictive modeling. The application is built with Streamlit, styled using a premium locked Slate Dark theme (Indigo & Cyan solid accents), and compares 7 distinct regressor models to output the most accurate predictions.
+A Machine Learning web application designed to predict student academic outcomes and detect risk levels early using advanced predictive modeling. The application is built with Streamlit and compares 7 distinct regressor models to output the most accurate predictions.
 
-* **Live Deployment Link**: *[Insert Deployment Link here]*
+**Live Deployment Link**: https://student-performance-predictor-07.streamlit.app/
 
-
+<p align="center"><img width="1000" height="800" alt="image" src="https://github.com/user-attachments/assets/e5af054a-65b8-430a-af13-a5d9357a94c7" /></p>
 
 ---
 
@@ -15,11 +15,10 @@ An end-to-end, production-ready Machine Learning web application designed to pre
 * **What-If Analysis Dashboard**: Allows educators and students to slide model parameters dynamically and watch expected scores shift on an interactive speedometer/gauge chart in real-time.
 * **Model Evaluation & Leaderboard**: Ranks all 7 regressor models based on cross-validated R² score, Mean Absolute Error (MAE), Mean Squared Error (MSE), and Root Mean Squared Error (RMSE).
 * **Visual Analytics**: Interactive Plotly scatter plots and heatmaps highlighting attendance, study hours, correlation matrices, and relative feature importances.
-* **Responsive Slate Dark UI**: A clean, modern UI optimized for readability and dark/light theme toggleability (using CSS variables to align with Streamlit's native theme engines).
 
 ## Machine Learning Pipeline
 
-
+<p align="center"><img width="450" height="720" alt="image" src="https://github.com/user-attachments/assets/cfa66763-ec4f-4ae1-b763-1a3c8a9be331" /></p>
 
 ### 1. Data Ingestion & Generation
 * Generates a synthetic dataset (`student_data.csv`) of 1,000 students modeled on realistic student distributions (skewed attendance, failures heavily weighted at 0, gamma-distributed study hours, sleep/screen time inverse correlations).
@@ -52,6 +51,8 @@ Below are the evaluation metrics of the trained models sorted by their $R^2$ per
 | 5 | **Random Forest** | 0.8221 | 3.1029 | 14.7076 | 3.8351 | `max_depth: 10`, `n_estimators: 256` |
 | 6 | **AdaBoost Regressor** | 0.7661 | 3.5155 | 19.3324 | 4.3969 | `learning_rate: 0.5`, `n_estimators: 256` |
 | 7 | **Decision Tree** | 0.6448 | 4.2065 | 29.3605 | 5.4185 | `criterion: poisson`, `max_depth: 8` |
+
+<p align="center"><img width="700" height="700" alt="image" src="https://github.com/user-attachments/assets/37df071d-60ff-4eee-8fda-59c05eec11f6" /></p>
 
 
 ## Installation and Run Instructions
