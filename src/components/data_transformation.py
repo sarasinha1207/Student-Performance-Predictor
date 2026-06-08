@@ -27,13 +27,13 @@ class DataTransformation:
                 "assignments_completed",
                 "study_hours",
                 "class_participation",
+                "failures",
                 "sleep_hours",
                 "screen_time",
                 "physical_activity"
             ]
             categorical_columns = [
-                "parent_education",
-                "family_income",
+                "travel_time",
                 "internet_access",
                 "school_type"
             ]

@@ -30,11 +30,11 @@ class CustomData:
         assignments_completed: int,
         study_hours: float,
         class_participation: int,
+        failures: int,
         sleep_hours: float,
         screen_time: float,
         physical_activity: int,
-        parent_education: str,
-        family_income: str,
+        travel_time: str,
         internet_access: str,
         school_type: str
     ):
@@ -43,11 +43,11 @@ class CustomData:
         self.assignments_completed = assignments_completed
         self.study_hours = study_hours
         self.class_participation = class_participation
+        self.failures = failures
         self.sleep_hours = sleep_hours
         self.screen_time = screen_time
         self.physical_activity = physical_activity
-        self.parent_education = parent_education
-        self.family_income = family_income
+        self.travel_time = travel_time
         self.internet_access = internet_access
         self.school_type = school_type
 
@@ -59,11 +59,11 @@ class CustomData:
                 "assignments_completed": [self.assignments_completed],
                 "study_hours": [self.study_hours],
                 "class_participation": [self.class_participation],
+                "failures": [self.failures],
                 "sleep_hours": [self.sleep_hours],
                 "screen_time": [self.screen_time],
                 "physical_activity": [self.physical_activity],
-                "parent_education": [self.parent_education],
-                "family_income": [self.family_income],
+                "travel_time": [self.travel_time],
                 "internet_access": [self.internet_access],
                 "school_type": [self.school_type]
             }

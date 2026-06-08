@@ -151,13 +151,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("""
-    <div class="title-banner">
-        <h1>Student Performance Predictor</h1>
-        <p>Analyze and predict student exam outcomes using Machine Learning</p>
-    </div>
-""", unsafe_allow_html=True)
-
 # Tabs configuration (Emoji-free)
 tab_home, tab_predict, tab_whatif, tab_compare, tab_analytics = st.tabs([
     "Home", "Predict", "What-If Analysis", "Model Comparison", "Analytics"
@@ -247,11 +240,11 @@ with tab_predict:
                 class_participation = st.selectbox("Class Participation (1-5)", [1, 2, 3, 4, 5], index=3)
                 
             with p_col2:
+                failures = st.slider("Previous Failures (0-5)", 0, 5, 0, 1)
                 sleep_hours = st.slider("Sleep Hours/Day", 4.0, 10.0, 7.5, 0.5)
                 screen_time = st.slider("Screen Time/Day (hrs)", 1.0, 10.0, 3.0, 0.5)
                 physical_activity = st.slider("Physical Activity Rate (0-5)", 0, 5, 3, 1)
-                parent_education = st.selectbox("Parent Education Level", ["High School", "Some College", "Associate's Degree", "Bachelor's Degree", "Master's Degree"], index=2)
-                family_income = st.selectbox("Family Income Status", ["Low", "Medium", "High"], index=1)
+                travel_time = st.selectbox("Travel Time to School", ["Under 15 min", "15-30 min", "30-60 min", "Over 60 min"], index=1)
                 
             internet_access = st.radio("Internet Access", ["Yes", "No"], horizontal=True)
             school_type = st.radio("School Type", ["Public", "Private"], horizontal=True)
@@ -270,11 +263,11 @@ with tab_predict:
                     assignments_completed=assignments_completed,
                     study_hours=study_hours,
                     class_participation=class_participation,
+                    failures=failures,
                     sleep_hours=sleep_hours,
                     screen_time=screen_time,
                     physical_activity=physical_activity,
-                    parent_education=parent_education,
-                    family_income=family_income,
+                    travel_time=travel_time,
                     internet_access=internet_access,
                     school_type=school_type
                 )
@@ -339,6 +332,8 @@ with tab_predict:
                     recs.append("Maintain 7-8 hours of sleep for improved memory consolidation.")
                 if assignments_completed < 8:
                     recs.append("Complete pending assignments to strengthen practical knowledge.")
+                if failures > 0:
+                    recs.append("Prioritize recovering past failed subjects and attend extra remedial classes.")
                 if not recs:
                     recs.append("Keep maintaining your current positive profile habits.")
                     
@@ -357,6 +352,7 @@ with tab_whatif:
         wi_att = st.slider("Attendance Rate (%)", 50.0, 100.0, 85.0, 1.0, key="wi_att_slider")
         wi_study = st.slider("Study Hours/Day", 1.0, 10.0, 4.0, 0.5, key="wi_study_slider")
         wi_assign = st.slider("Assignments Completed (0-10)", 0, 10, 6, 1, key="wi_assign_slider")
+        wi_failures = st.slider("Previous Failures (0-5)", 0, 5, 0, 1, key="wi_failures_slider")
         wi_sleep = st.slider("Sleep Hours/Day", 4.0, 10.0, 7.0, 0.5, key="wi_sleep_slider")
         wi_screen = st.slider("Screen Time/Day (hrs)", 1.0, 10.0, 5.0, 0.5, key="wi_screen_slider")
         
@@ -369,11 +365,11 @@ with tab_whatif:
                 assignments_completed=wi_assign,
                 study_hours=wi_study,
                 class_participation=3,
+                failures=wi_failures,
                 sleep_hours=wi_sleep,
                 screen_time=wi_screen,
                 physical_activity=3,
-                parent_education="Some College",
-                family_income="Medium",
+                travel_time="15-30 min",
                 internet_access="Yes",
                 school_type="Public"
             )
@@ -489,8 +485,8 @@ with tab_analytics:
             feature_names = preprocessor.get_feature_names_out()
             original_features = [
                 "previous_score", "attendance", "assignments_completed", "study_hours",
-                "class_participation", "sleep_hours", "screen_time", "physical_activity",
-                "parent_education", "family_income", "internet_access", "school_type"
+                "class_participation", "failures", "sleep_hours", "screen_time", "physical_activity",
+                "travel_time", "internet_access", "school_type"
             ]
             readable_names = {
                 "previous_score": "Previous Score",
@@ -498,11 +494,11 @@ with tab_analytics:
                 "assignments_completed": "Assignments Completed",
                 "study_hours": "Study Hours",
                 "class_participation": "Class Participation",
+                "failures": "Previous Failures",
                 "sleep_hours": "Sleep Duration",
                 "screen_time": "Screen Time",
                 "physical_activity": "Physical Activity",
-                "parent_education": "Parental Education",
-                "family_income": "Family Income",
+                "travel_time": "Travel Time",
                 "internet_access": "Internet Access",
                 "school_type": "School Type"
             }
@@ -574,9 +570,9 @@ with tab_analytics:
         if os.path.exists(data_path):
             df_scat = pd.read_csv(data_path)
             
-            x_option = st.selectbox("Select X-Axis Feature", ["study_hours", "attendance", "previous_score", "sleep_hours", "screen_time"])
+            x_option = st.selectbox("Select X-Axis Feature", ["study_hours", "attendance", "previous_score", "sleep_hours", "screen_time", "failures"])
             y_option = st.selectbox("Select Y-Axis Feature", ["final_score", "previous_score", "attendance"])
-            color_option = st.selectbox("Select Color Legend Feature", ["family_income", "parent_education", "internet_access", "school_type"])
+            color_option = st.selectbox("Select Color Legend Feature", ["travel_time", "internet_access", "school_type"])
             
             fig_sc = px.scatter(
                 df_scat,
