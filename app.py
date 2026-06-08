@@ -29,8 +29,7 @@ def load_ml_components():
 
 model, preprocessor = load_ml_components()
 
-# Custom Adaptive Styling (Light/Dark Mode friendly, emoji-free)
-# Custom Palette Styling (Emoji-free)
+# Custom Palette Styling (Indigo & Cyan, Emoji-free, Gradient-free)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@400;500;600&display=swap');
@@ -45,7 +44,7 @@ st.markdown("""
         color: #F8FAFC !important;
     }
     
-    /* Custom Card Containers */
+    /* Custom Card Containers (Locked equal height, no glow) */
     .adaptive-card {
         background-color: #1E293B;
         border: 1px solid rgba(148, 163, 184, 0.15);
@@ -55,24 +54,27 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
         transition: all 0.3s ease;
         color: #F8FAFC;
+        height: auto;
+    }
+    @media (min-width: 768px) {
+        .adaptive-card {
+            height: 480px !important; /* Enforce equalized size on desktop */
+        }
     }
     .adaptive-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(99, 102, 241, 0.25);
-        border-color: rgba(6, 182, 212, 0.3);
+        border-color: rgba(148, 163, 184, 0.35); /* Muted slate border, no cyan glow */
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3); /* Dark shadow, no glow */
     }
     .adaptive-card h3, .adaptive-card h4 {
         margin-top: 0;
         color: #06B6D4 !important;
     }
     
-    /* KPI / Statistics Cards */
+    /* KPI / Statistics Cards (No cyan border-left, no glow) */
     .kpi-card {
         background-color: #1E293B;
-        border-left: 4px solid #06B6D4;
-        border-top: 1px solid rgba(148, 163, 184, 0.1);
-        border-right: 1px solid rgba(148, 163, 184, 0.1);
-        border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        border: 1px solid rgba(148, 163, 184, 0.15);
         padding: 20px;
         border-radius: 12px;
         text-align: center;
@@ -81,7 +83,8 @@ st.markdown("""
     }
     .kpi-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(99, 102, 241, 0.25);
+        border-color: rgba(148, 163, 184, 0.35); /* Muted slate border, no cyan glow */
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3); /* Dark shadow, no glow */
     }
     .kpi-val {
         font-size: 2rem;
@@ -90,7 +93,7 @@ st.markdown("""
         margin-top: 5px;
     }
     
-    /* Leaderboard cards */
+    /* Leaderboard cards (No glow) */
     .leaderboard-item {
         background-color: #1E293B;
         border: 1px solid rgba(148, 163, 184, 0.12);
@@ -104,7 +107,7 @@ st.markdown("""
     }
     .leaderboard-item:hover {
         transform: translateY(-3px);
-        box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     }
     .rank-badge {
         font-weight: bold;
@@ -117,7 +120,7 @@ st.markdown("""
     .rank-3 { background-color: rgba(180, 83, 9, 0.15); color: #d97706; border: 1px solid rgba(180, 83, 9, 0.3); }
     .rank-normal { background-color: rgba(128, 128, 128, 0.1); color: #94a3b8; }
     
-    /* Prediction Output Cards */
+    /* Prediction Output Cards (Solid backgrounds, no gradients, no glow) */
     .result-container {
         padding: 24px;
         border-radius: 14px;
@@ -129,16 +132,16 @@ st.markdown("""
     }
     .result-container:hover {
         transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(99, 102, 241, 0.25);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
     }
     .res-low {
-        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+        background-color: #059669;
     }
     .res-medium {
-        background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+        background-color: #d97706;
     }
     .res-high {
-        background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+        background-color: #dc2626;
     }
     .result-val {
         font-size: 3.5rem;
@@ -146,15 +149,38 @@ st.markdown("""
         font-weight: 700;
         margin: 8px 0;
     }
+    
+    /* Sticky/Fixed Custom Footer */
+    .custom-footer {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        background-color: var(--background-color, #0F172A);
+        border-top: 1px solid rgba(148, 163, 184, 0.12);
+        padding: 12px 0;
+        text-align: center;
+        z-index: 999;
+        font-size: 0.95rem;
+    }
+    /* Remove Streamlit default bottom padding gap */
+    .block-container, div[data-testid="stMainBlockContainer"] {
+        padding-bottom: 75px !important;
+    }
+    /* Hide Streamlit default footer */
+    footer {
+        visibility: hidden !important;
+        height: 0 !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
-# Heading Box (Above Navbar/Tabs)
+# Heading Box (Above Navbar/Tabs - Solid background, no gradients, no glow)
 st.markdown("""
-    <div style="background: linear-gradient(135deg, #6366F1 0%, #06B6D4 100%); padding: 35px; border-radius: 16px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);">
+    <div style="background-color: #1E293B; padding: 35px; border-radius: 16px; margin-bottom: 25px; border: 1px solid rgba(148, 163, 184, 0.2); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);">
         <h1 style="margin-top: 0; color: #F8FAFC !important; font-size: 2.8rem; font-weight: 700; text-align: center; text-shadow: 0 2px 4px rgba(0,0,0,0.15);">Student Performance Predictor</h1>
-        <p style="font-size: 1.2rem; line-height: 1.6; color: #F8FAFC; opacity: 0.9; margin-bottom: 0; text-align: center;">
-            An intelligent Machine Learning platform that analyzes student data to forecast academic outcomes and support early intervention strategies
+        <p style="font-size: 1.2rem; line-height: 1.6; color: #06B6D4; margin-bottom: 0; text-align: center; font-weight: 500;">
+            An Intelligent Machine Learning platform that analyzes student data to forecast academic outcomes and support early intervention strategies
         </p>
     </div>
 """, unsafe_allow_html=True)
@@ -178,28 +204,28 @@ with tab_home:
         with col_k1:
             st.markdown(f"""
                 <div class="kpi-card">
-                    <div style="font-size: 0.9rem; color: gray; font-weight: 500;">Total Students Evaluated</div>
+                    <div style="font-size: 0.9rem; color: white; font-weight: 500;">Total Students Evaluated</div>
                     <div class="kpi-val">{df_kpi.shape[0]}</div>
                 </div>
             """, unsafe_allow_html=True)
         with col_k2:
             st.markdown(f"""
                 <div class="kpi-card">
-                    <div style="font-size: 0.9rem; color: gray; font-weight: 500;">Average Study Hours/Day</div>
+                    <div style="font-size: 0.9rem; color: white; font-weight: 500;">Average Study Hours/Day</div>
                     <div class="kpi-val">{df_kpi['study_hours'].mean():.1f} hrs</div>
                 </div>
             """, unsafe_allow_html=True)
         with col_k3:
             st.markdown(f"""
                 <div class="kpi-card">
-                    <div style="font-size: 0.9rem; color: gray; font-weight: 500;">Average Class Attendance</div>
+                    <div style="font-size: 0.9rem; color: white; font-weight: 500;">Average Class Attendance</div>
                     <div class="kpi-val">{df_kpi['attendance'].mean():.1f}%</div>
                 </div>
             """, unsafe_allow_html=True)
         with col_k4:
             st.markdown(f"""
                 <div class="kpi-card">
-                    <div style="font-size: 0.9rem; color: gray; font-weight: 500;">Average Target Final Score</div>
+                    <div style="font-size: 0.9rem; color: white; font-weight: 500;">Average Target Final Score</div>
                     <div class="kpi-val">{df_kpi['final_score'].mean():.1f}%</div>
                 </div>
             """, unsafe_allow_html=True)
@@ -209,7 +235,7 @@ with tab_home:
     with col_ps1:
         st.markdown("""
             <div class="adaptive-card">
-                <h3 style="color: #3b82f6; margin-top: 0;">Project Objective & Problem Statement</h3>
+                <h3 style="margin-top: 0;">Project Objective & Problem Statement</h3>
                 <p>Predicting student academic failure or success early allows educators to deliver timely, personalized interventions. This system acts as a supportive advisory engine for students, teachers, and school administrations by providing:</p>
                 <ul style="padding-left: 20px;">
                     <li style="margin-bottom: 8px;"><b>Early Risk Identification</b>: Classifying students into High, Medium, and Low risk thresholds.</li>
@@ -221,7 +247,7 @@ with tab_home:
     with col_ps2:
         st.markdown("""
             <div class="adaptive-card">
-                <h3 style="color: #3b82f6; margin-top: 0;">Machine Learning Models</h3>
+                <h3 style="margin-top: 0;">Machine Learning Models</h3>
                 <p>Our pipeline compares 7 distinct regressor models using cross-validated Grid Search to output the most accurate predictions:</p>
                 <ol style="padding-left: 20px;">
                     <li style="margin-bottom: 4px;"><b>Linear Regression</b></li>
@@ -252,6 +278,7 @@ with tab_predict:
                 assignments_completed = st.slider("Assignments Completed (0-10)", 0, 10, 8, 1)
                 study_hours = st.slider("Study Hours/Day", 1.0, 10.0, 5.0, 0.5)
                 class_participation = st.selectbox("Class Participation (1-5)", [1, 2, 3, 4, 5], index=3)
+                internet_access = st.radio("Internet Access", ["Yes", "No"], horizontal=True)
                 
             with p_col2:
                 failures = st.slider("Previous Failures (0-5)", 0, 5, 0, 1)
@@ -259,9 +286,8 @@ with tab_predict:
                 screen_time = st.slider("Screen Time/Day (hrs)", 1.0, 10.0, 3.0, 0.5)
                 physical_activity = st.slider("Physical Activity Rate (0-5)", 0, 5, 3, 1)
                 travel_time = st.selectbox("Travel Time to School", ["Under 15 min", "15-30 min", "30-60 min", "Over 60 min"], index=1)
-                
-            internet_access = st.radio("Internet Access", ["Yes", "No"], horizontal=True)
-            school_type = st.radio("School Type", ["Public", "Private"], horizontal=True)
+                school_type = st.radio("School Type", ["Public", "Private"], horizontal=True)
+            
             
             submit = st.form_submit_button("Generate Prediction")
             
@@ -498,7 +524,7 @@ with tab_compare:
                         <span class="rank-badge {ranks[df_sorted.index.get_loc(idx)]}">{badges[df_sorted.index.get_loc(idx)]}</span>
                         <span style="font-weight: bold; margin-left: 15px;">{row['Model']}</span>
                     </div>
-                    <div style="font-weight: bold; color: #3b82f6;">R2: {row['R2 Score']:.4f}</div>
+                    <div style="font-weight: bold; color: #06B6D4;">R2: {row['R2 Score']:.4f}</div>
                 </div>
             """, unsafe_allow_html=True)
             
@@ -574,7 +600,7 @@ with tab_analytics:
                 x="Relative Importance (%)",
                 y="Feature",
                 orientation="h",
-                color_discrete_sequence=["#3b82f6"]
+                color_discrete_sequence=["#6366F1"]
             )
             fig_imp.update_layout(
                 height=350,
@@ -636,9 +662,9 @@ with tab_analytics:
         else:
             st.warning("Dataset not found.")
 
-# Centered Footer at the bottom
+# Centered Footer at the bottom (Sticky to viewport bottom)
 st.markdown("""
-    <div style="margin-top: 50px; padding: 20px; text-align: center; border-top: 1px solid rgba(128, 128, 128, 0.15);">
-        <p style="color: gray; font-size: 1rem; margin: 0;">Made by Sara Sinha</p>
+    <div class="custom-footer">
+        <p style="margin: 0; font-weight: 500; color: var(--text-color, #F8FAFC) !important;">Made with ❤️ by Sara Sinha | © 2026 Student Performance Predictor</p>
     </div>
 """, unsafe_allow_html=True)
