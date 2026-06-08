@@ -14,7 +14,6 @@ from sklearn.tree import DecisionTreeRegressor
 from xgboost import XGBRegressor
 
 from src.exception import CustomException
-from src.logger import logging
 from src.utils import save_object, evaluate_models
 
 @dataclass
@@ -28,7 +27,7 @@ class ModelTrainer:
 
     def initiate_model_trainer(self, train_array, test_array):
         try:
-            logging.info("Split training and test input data")
+            print("Split training and test input data")
             X_train, y_train, X_test, y_test = (
                 train_array[:, :-1],
                 train_array[:, -1],
@@ -77,7 +76,7 @@ class ModelTrainer:
                 }
             }
 
-            logging.info("Evaluating all 7 machine learning models")
+            print("Evaluating all 7 machine learning models")
             model_report = evaluate_models(
                 X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test,
                 models=models, param=params
@@ -87,7 +86,7 @@ class ModelTrainer:
             os.makedirs(os.path.dirname(self.model_trainer_config.model_report_file_path), exist_ok=True)
             with open(self.model_trainer_config.model_report_file_path, "w") as f:
                 json.dump(model_report, f, indent=4)
-            logging.info(f"Model report saved to {self.model_trainer_config.model_report_file_path}")
+            print(f"Model report saved to {self.model_trainer_config.model_report_file_path}")
 
             # Get best model score and name
             best_model_name = ""
@@ -103,7 +102,7 @@ class ModelTrainer:
             if best_model_score < 0.6:
                 raise CustomException("No best model found with R2 score >= 0.6")
             
-            logging.info(f"Best found model: {best_model_name} with R2 score: {best_model_score}")
+            print(f"Best found model: {best_model_name} with R2 score: {best_model_score}")
 
             # Fit best model on the entire training data again to finalize
             best_model.fit(X_train, y_train)
